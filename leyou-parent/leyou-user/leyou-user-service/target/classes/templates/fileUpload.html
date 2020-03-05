@@ -1,0 +1,216 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <script th:src="@{/layui/layui.js}"></script>
+    <script th:src="@{/js/jquery-3.4.1.js}"></script>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/user/CourseName",
+                async: false,
+                success: function (data) {
+                    $("#a").empty();
+                    if (data.length > 0) {
+                        for (var i in data) {
+                            $("#a").append("<option>" + data[i] + "<option>");
+                        }
+                    }
+                }
+            });
+            $.ajax({
+                url: "/ClassName",
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        $("#b").empty();
+                        for (var i in data) {
+                            $("#b").append("<option>" + data[i] + "<option>");
+                        }
+                    }
+                }
+            });
+            $.ajax({
+                url: "/PersonInfo/Teacher",
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        // $("#c").empty();
+                        for (var i in data) {
+                            $("#c").append("<option >" + data[i] + "<option>");
+                        }
+                    }
+                }
+            });
+        })
+    </script>
+</head>
+<body>
+<div class="layui-upload">
+    <div class="layui-progress" lay-showpercent="true" lay-filter="demo" id="demo">  
+        <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+    </div>
+    <form class="layui-form" style="float: left" id="ss" >
+        <div class="layui-form-item">
+            <label class="layui-form-label">课程名称</label>
+            <div class="layui-input-block">
+                <select  id="a" name="CourseName" lay-filter="aa">
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">班级名称</label>
+            <div class="layui-input-block">
+                <select  id="b" name="ClassName" lay-filter="bb" lay-verify="required">
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">授课教师</label>
+            <div class="layui-input-block">
+                <select  id="c" name="Teacher" lay-filter="cc" lay-verify="required">
+                    <option>1111</option>
+                    <option>2222</option>
+                    <option>3333</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" value="提交">提交</button>
+    </form>
+    <div class="layui-upload">
+        <button class="layui-btn" id="test" name="file">
+            <i class="layui-icon">&#xe67c;</i>选择文件
+        </button>
+    </div>
+    <div class="layui-upload-list">
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>文件名</th>
+                <th>大小</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="demoList"></tbody>
+        </table>
+    </div>
+    <button class="layui-btn" id="s">上传
+    </button>
+</div>
+
+<script>
+    function ee(){
+        console.log($("#a").val());
+    };
+    layui.use(['upload', 'layer', 'element', 'form'], function () {
+        var upload = layui.upload;
+        var element = layui.element;
+        var layer = layui.layer;
+        var form = layui.form;
+        form.on("select(aa)",function(data){
+            window.CourseName=data.value;
+            console.log(window.CourseName); //复选框value值，也可以通过data.elem.value得到
+
+        });
+        form.on("select(bb)",function (data) {
+            window.ClassName=data.value;
+            console.log(window.ClassName);
+        });
+        form.on("select(cc)",function (data) {
+            window.Teacher=data.value;
+            console.log(window.Teacher);
+        });
+        var ss = {
+            'qq': window.CourseName,
+            'ww':window.ClassName,
+            'ee':window.Teacher
+        };
+//创建监听函数
+        var xhrOnProgress = function (fun) {
+            xhrOnProgress.onprogress = fun; //绑定监听
+            //使用闭包实现监听绑
+            return function () {
+                //通过$.ajaxSettings.xhr();获得XMLHttpRequest对象
+                var xhr = $.ajaxSettings.xhr();
+                //判断监听函数是否为函数
+                if (typeof xhrOnProgress.onprogress !== 'function')
+                    return xhr;
+                //如果有监听函数并且xhr对象支持绑定时就把监听函数绑定上去
+                if (xhrOnProgress.onprogress && xhr.upload) {
+                    xhr.upload.onprogress = xhrOnProgress.onprogress;
+                }
+                return xhr;
+            }
+        };
+
+        var ss = {
+            'qq': $("#CourseName").val(),
+            'ww':$("#ClassName").val(),
+            'ee':$("#Teacher").val()
+        };
+        //执行实例
+        var demoListView = $('#demoList'),
+            uploadListIns = upload.render({
+                elem: '#test' //绑定元素
+                , url: '/user/fileUpload' //上传接口
+                , data: {
+                    "CourseName": window.CourseName,
+                    "ClassName":window.ClassName,
+                    "Teacher":window.Teacher
+                }
+                , multiple: true
+                , accept: 'file'
+                , auto: false
+                , size: 0
+                , bindAction: '#s'
+                , xhr: xhrOnProgress
+                , progress: function (value) {//上传进度回调 value进度值
+                    element.progress('demo', value + '%');//设置页面进度条
+                }
+                , choose: function (obj) {
+                    var files = this.files = obj.pushFile(); //将每次选择的文件追加到文件队列
+                    //读取本地文件
+                    obj.preview(function (index, file, result) {
+                        var tr = $(['<tr id="upload-' + index + '">'
+                            , '<td>' + file.name + '</td>'
+                            , '<td>' + (file.size / 1024).toFixed(1) + 'kb</td>'
+                            , '<td>等待上传</td>'
+                            , '<td>'
+                            , '<button class="layui-btn layui-btn-xs demo-reload layui-hide">重传</button>'
+                            , '<button class="layui-btn layui-btn-xs layui-btn-danger demo-delete">删除</button>'
+                            , '</td>'
+                            , '</tr>'].join(''));
+                        tr.find('.demo-reload').on('click', function () {
+                            obj.upload(index, file);
+                        });
+
+                        //删除
+                        tr.find('.demo-delete').on('click', function () {
+                            delete files[index]; //删除对应的文件
+                            tr.remove();
+                            uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+                        });
+
+                        demoListView.append(tr);
+                    });
+                }
+                , done: function (res, index) {
+                    var tr = demoListView.find('tr#upload-' + index)
+                        , tds = tr.children();
+                    tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+                    tds.eq(3).html(''); //清空操作
+                    return delete this.files[index]; //删除文件队列已经上传成功的文件
+                }
+                , error: function (index) {
+                    element.progress('demo', '0%');
+                    var tr = demoListView.find('tr#upload-' + index)
+                        , tds = tr.children();
+                    tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                    tds.eq(3).find('.demo-reload').removeClass('layui-hide'); //显示重传
+                }
+            })
+    })
+</script>
+</body>
+</html>
