@@ -2,7 +2,9 @@ package com.leyou.controller;
 
 import com.leyou.item.pojo.Category;
 import com.leyou.service.CategoryService;
+import org.omg.CORBA.PUBLIC_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
@@ -54,5 +56,25 @@ public class CategoryController {
         }
         return ResponseEntity.ok(categoryList);
     }
+    /**
+     * 根据ids查询分类名称
+     */
+    @GetMapping
+    public ResponseEntity<List<String>> queryNameByids(@RequestParam("ids")List<Long> ids){
+        List<String> names = this.categoryService.queryCategoryByNames(ids);
+        if (names==null || names.size()<0){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(names);
+    }
+    @GetMapping("all/level")
+    public ResponseEntity<List<Category>> queryAllByCid3(@RequestParam("id") Long id){
+        List<Category> list = this.categoryService.queryAllByCid3(id);
+        if (list == null || list.size() < 1) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(list);
+    }
+
 }
 

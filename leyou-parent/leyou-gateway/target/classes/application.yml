@@ -2,7 +2,12 @@ server:
   port: 10010
 spring:
   application:
-    name: leyou-gateway
+    name: leyou-gateway]
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/leyou
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
 eureka:
   client:
     registry-fetch-interval-seconds: 5
@@ -10,3 +15,24 @@ eureka:
       defaultZone: http://127.0.0.1:10086/eureka
 zuul:
   prefix: /api # 路由路径前缀
+  routes:
+    item-service: /item/** # 商品微服务的映射路径
+    search-service: /search/**
+    user-service: /user/**
+    auth-service: /auth/** # 授权中心微服务
+    cart-service: /cart/** # 授权中心微服务
+    order-service: /order/** # 授权中心微服务
+  add-host-header: true
+  sensitive-headers:
+leyou:
+  jwt:
+    pubKeyPath: D:\\rsa\\rsa\\rsa.pub # 公钥地址
+    cookieName: LY_TOKEN
+  filter:
+    allowPaths:
+      - /api/auth
+      - /api/search
+      - /api/user/register
+      - /api/user/check
+      - /api/user/code
+      - /api/item

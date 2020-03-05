@@ -10,15 +10,14 @@ import com.leyou.item.pojo.SpuDetail;
 import com.leyou.item.pojo.Stock;
 import com.leyou.mapper.*;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 @Service
 public class GoodService {
@@ -37,7 +36,10 @@ public class GoodService {
     @Autowired
     private StockMapper stockMapper;
 
-    public PageResult<SpuBo> queryGoodsList(String key, String saleable, Integer page, Integer rows) {
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
+    public PageResult<SpuBo> queryGoodsList(String key, Boolean saleable, Integer page, Integer rows) {
         //创建查询条件
         Example example=new Example(Spu.class);
         Example.Criteria criteria = example.createCriteria();
@@ -62,7 +64,7 @@ public class GoodService {
           //赋值属性
             BeanUtils.copyProperties(spu,spuBo);
             spuBo.setBname(this.brandMapper.selectByPrimaryKey(spu.getBrandId()).getName());
-           List<String> names= this.categoryService.queryCategoryByNames(spu.getCid1(),spu.getCid2(),spu.getCid3());
+           List<String> names= this.categoryService.queryCategoryByNames(Arrays.asList(spu.getCid1(),spu.getCid2(),spu.getCid3()));
             spuBo.setCname(StringUtils.join(names,"/"));
             spuBoList.add(spuBo);
         });
@@ -84,8 +86,16 @@ public class GoodService {
         this.spuDetailMapper.insertSelective(spuDetail);
         //在增加Sku和Sku_Stock表中的内容
         saveSkuAndStock(spuBo);
+        sendMsg("insert",spuBo.getId());
 
+    }
 
+    private void sendMsg(String type,Long id) {
+        try {
+            this.amqpTemplate.convertAndSend("item."+type,id);
+        } catch (AmqpException e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveSkuAndStock(SpuBo spuBo) {
@@ -146,6 +156,16 @@ public class GoodService {
 
         //新增SpuDetail
         this.spuDetailMapper.updateByPrimaryKeySelective(spuBo.getSpuDetail());
+        sendMsg("update",spuBo.getId());
 
+    }
+
+    public Spu querySpuById(Long id) {
+        Spu spu = this.spuMapper.selectByPrimaryKey(id);
+        return spu;
+    }
+
+    public Sku queryBySkuId(Long skuId) {
+        return  this.skuMapper.selectByPrimaryKey(skuId);
     }
 }

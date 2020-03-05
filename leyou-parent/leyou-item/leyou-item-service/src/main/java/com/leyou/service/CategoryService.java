@@ -53,12 +53,19 @@ public class CategoryService {
         return this.categoryMapper.queryCategoryList(bid);
     }
 
-    public List<String> queryCategoryByNames(Long cid1, Long cid2, Long cid3) {
+    public List<String> queryCategoryByNames(List<Long> ids) {
         List<String> names=new ArrayList<>();
-        List<Category> categoryList = this.categoryMapper.selectByIdList(Arrays.asList(cid1, cid2, cid2));
+        List<Category> categoryList = this.categoryMapper.selectByIdList(ids);
         for (Category category : categoryList) {
             names.add(category.getName());
         }
         return names;
+    }
+
+    public List<Category> queryAllByCid3(Long id) {
+        Category c3 = this.categoryMapper.selectByPrimaryKey(id);
+        Category c2 = this.categoryMapper.selectByPrimaryKey(c3.getParentId());
+        Category c1 = this.categoryMapper.selectByPrimaryKey(c2.getParentId());
+        return Arrays.asList(c1,c2,c3);
     }
 }

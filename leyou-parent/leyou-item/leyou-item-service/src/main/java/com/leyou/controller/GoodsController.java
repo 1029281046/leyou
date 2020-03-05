@@ -15,15 +15,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
-public class SpuController {
+@RestController
+@RequestMapping
+public class GoodsController {
 
     @Autowired
     private GoodService goodService;
-    @RequestMapping("spu/page")
+    @RequestMapping("/spu/page")
     public ResponseEntity<PageResult<SpuBo>> queryGoods(
             @RequestParam(value = "key",required = false) String key,
-            @RequestParam(value = "saleable",required = false) String saleable,
+            @RequestParam(value = "saleable",required = false) Boolean saleable,
             @RequestParam(value = "page",defaultValue = "1") Integer page,
             @RequestParam(value = "rows",defaultValue = "5") Integer rows
     ){
@@ -62,6 +63,26 @@ public class SpuController {
     private ResponseEntity<Void> EditGoods(@RequestBody SpuBo spuBo){
         this.goodService.editGoods(spuBo);
         return ResponseEntity.noContent().build();
+    }
+    /***
+     *
+     */
+
+    @GetMapping("{id}")
+    public ResponseEntity<Spu> querySpuById(@PathVariable("id") Long id){
+         Spu spu=   this.goodService.querySpuById(id);
+        if (spu==null){
+            return ResponseEntity.badRequest().build();
+        }
+         return ResponseEntity.ok(spu);
+    }
+    @GetMapping("sku/{skuId}")
+    public ResponseEntity<Sku> querBySkuId(@PathVariable("skuId")Long skuId){
+        Sku sku=  this.goodService.queryBySkuId(skuId);
+        if (sku==null){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(sku);
     }
 
 }

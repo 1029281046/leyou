@@ -57,4 +57,14 @@ public class SpecificationController {
         this.specificationService.deleteSpecParam(id);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
+    @GetMapping("group/param/{cid}")
+    public ResponseEntity<List<SpecGroup>> queryGroupWithPramId(@PathVariable("cid") Long cid){
+        List<SpecGroup> groupList=   this.specificationService.queryGroupWithCid(cid);
+        if (CollectionUtils.isEmpty(groupList)){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(groupList);
+    }
 }

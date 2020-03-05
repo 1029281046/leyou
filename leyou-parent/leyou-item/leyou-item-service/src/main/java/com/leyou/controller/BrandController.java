@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.MediaSize;
 import java.util.List;
 
 @Controller
@@ -58,6 +59,17 @@ public class BrandController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(brandList);
+    }
+    /**
+     * 根据bid查询品牌名称
+     */
+    @GetMapping("{id}")
+    public ResponseEntity<Brand> queryNameById(@PathVariable("id")Long id){
+        Brand brand=   this.brandService.queryById(id);
+        if (brand==null){
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(brand);
     }
 
 }

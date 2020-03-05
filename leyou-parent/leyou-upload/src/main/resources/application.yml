@@ -6,6 +6,11 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB # 限制文件上传的大小
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/leyou
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
 # Eureka
 eureka:
   client:
@@ -22,3 +27,10 @@ fdfs:
     height: 60
   tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
     - 192.168.1.99:22122
+ly:
+  upload:
+    baseUrl: http://image.leyou.com/
+    allowTypes:
+      - image/jpeg
+      - image/png
+      - image/bmp
